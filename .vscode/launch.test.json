@@ -1,0 +1,30 @@
+{
+    "run": {
+        "default": "",
+        "items": [
+            {
+                "name": "atividade1",
+                "projectName": "atividade1",
+                "workingDirectory": "c:\\Users\\joao-\\Desktop\\if688-exercises\\01-AutoJflexTest",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            }
+        ]
+    },
+    "debug": {
+        "default": "",
+        "items": [
+            {
+                "name": "atividade1",
+                "projectName": "atividade1",
+                "workingDirectory": "c:\\Users\\joao-\\Desktop\\if688-exercises\\01-AutoJflexTest",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            }
+        ]
+    }
+}
