@@ -41,22 +41,9 @@ public class Interpreter implements IVisitor<Table> {
 	@Override
 	public Table visit(CompoundStm s) {
 
-		Table t1 = s.getStm1().accept(this);
-		Table t2 = s.getStm2().accept(this);
+		s.getStm1().accept(this);
+		s.getStm2().accept(this);
 
-		if(t1 != null) {
-			if(t2 != null)
-				pushTable(t2);
-			pushTable(t1);
-			return t1;
-
-		} else if(t2 != null){
-			pushTable(t2);
-			return t2;
-		}
-
-		System.out.println("oi");
-		System.out.println(head.toString());
 		return null;
 	}
 

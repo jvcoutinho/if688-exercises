@@ -38,13 +38,11 @@ public class IntAndTableVisitor implements IVisitor<IntAndTable> {
 
 	@Override
 	public IntAndTable visit(CompoundStm s) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public IntAndTable visit(PrintStm s) {
-
 		return null;
 	}
 
@@ -60,7 +58,6 @@ public class IntAndTableVisitor implements IVisitor<IntAndTable> {
 
 	@Override
 	public IntAndTable visit(IdExp e) {
-		//System.out.println(Interpreter.head.toString());
 		Table t = Interpreter.getIdentifier(this.t, e.getId());
 		return new IntAndTable(t.value, t);
 	}
@@ -77,11 +74,11 @@ public class IntAndTableVisitor implements IVisitor<IntAndTable> {
 		IntAndTable t2 = e.getRight().accept(this);
 
 		switch(e.getOper()) {
-			case 1:
+			case OpExp.Plus:
 				return new IntAndTable(t1.result + t2.result, t);
-			case 2:
+			case OpExp.Minus:
 				return new IntAndTable(t1.result - t2.result, t);
-			case 3:
+			case OpExp.Times:
 				return new IntAndTable(t1.result * t2.result, t);
 			default:
 				return new IntAndTable(t1.result / t2.result, t);
@@ -90,19 +87,16 @@ public class IntAndTableVisitor implements IVisitor<IntAndTable> {
 
 	@Override
 	public IntAndTable visit(ExpList el) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public IntAndTable visit(PairExpList el) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public IntAndTable visit(LastExpList el) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
