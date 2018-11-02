@@ -7,71 +7,53 @@ program:
     mainClass otherClass* EOF;
 
 mainClass:
-    'class' Identifier '{' 'public' 'static' 'Void' 'main' '(' 'String' '[' ']' Identifier ')' '{' statement '}' '}';
+    'class' identifier '{' 'public' 'static' ('Void' | 'void') 'main' '(' 'String' '[' ']' identifier ')' '{' statement '}' '}';
 
 otherClass:
-    'class' Identifier ('extends' Identifier)? '{' field* method* '}';
+    'class' identifier ('extends' identifier)? '{' field* method* '}';
 
 method:
-    'public' type Identifier '(' (parameter)* ')' '{' field* statement* 'return' expression ';' '}';
+    'public' type identifier '(' (parameter)* ')' '{' field* statement* 'return' expression ';' '}';
 
 field:
-    type Identifier ';';
+    type identifier ';';
 
 parameter:
-    type Identifier | type Identifier ',';
+    type identifier | type identifier ',';
 
-type: 'int' | 'boolean' | 'int' '[' ']' | Identifier;
+identifier:
+    Identifier;
+
+type: 'int' | 'boolean' | 'int' '[' ']' | identifier;
 
 /************
 * Statements.
 *************/
 statement:
-    printStatement |
-    conditionalStatement |
-    assignmentStatement |
-    arrayAssignmentStatement |
-    block |
-    loopStatement;
-
-    printStatement:
-        'System' '.' 'out' '.' 'println' '(' expression ')' ';';
-
-    conditionalStatement:
-        'if' '(' expression ')' statement 'else' statement;
-
-    assignmentStatement:
-        Identifier '=' expression ';';
-
-    arrayAssignmentStatement:
-        Identifier '[' expression '] = ' expression ';';
-
-    block:
-        '{' statement* '}';
-
-    loopStatement:
-        'while' '(' expression ')' statement;
-
+        'System' '.' 'out' '.' 'println' '(' expression ')' ';' #PrintStatement
+    |   'if' '(' expression ')' statement 'else' statement #ConditionalStatement
+    |   identifier '=' expression ';' #AssignmentStatement
+    |   identifier '[' expression '] = ' expression ';' #ArrayAssignmentStatement
+    |   '{' statement* '}' #Block
+    |   'while' '(' expression ')' statement #LoopStatement;
 
 /************
 * Expressions.
 *************/
 expression:
-    booleanExpression |
-    arithmeticExpression |
-    expression '.' 'length' | // ArrayLength.
-    expression '[' expression ']' | // ArrayLookup.
-    expression '.' Identifier '(' argument* ')' | // Call.
-    'new' 'int' '[' expression ']' | // NewArray.
-    'new' Identifier '(' ')' | // NewObject.
-    'this' |
-    Identifier;
-
-    booleanExpression:
-        '(' expression BinaryOperators expression ')' | '!' expression | 'true' | 'false';
-
-    arithmeticExpression:
-        '(' expression BinaryOperators expression ')' | Integer;
+        expression BinaryOperators expression #BinaryOperationExpression
+    |   '!' expression #NegationExpression
+    |   'true' #TrueExpression
+    |   'false' #FalseExpression
+    |   Integer #IntegerExpression
+    |   expression '.' 'length' #ArrayLengthExpression
+    |   expression '[' expression ']' #ArrayLookupExpression
+    |   expression '.' identifier '(' argument* ')' #CallExpression
+    |   'new' 'int' '[' expression ']' #NewArrayExpression
+    |   'new' identifier '(' ')' #NewObjectExpression
+    |   'this' #ThisExpression
+    |   identifier #IdentifierExpression
+    |   '(' expression ')' #ParenthesisExpression;
 
 argument:
     expression | expression ',';
