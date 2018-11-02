@@ -7,7 +7,7 @@ program:
     mainClass otherClass* EOF;
 
 mainClass:
-    'class' identifier '{' 'public' 'static' ('Void' | 'void') 'main' '(' 'String' '[' ']' identifier ')' '{' statement '}' '}';
+    'class' identifier '{' 'public' 'static' 'void' 'main' '(' 'String' '[' ']' identifier ')' '{' statement '}' '}';
 
 otherClass:
     'class' identifier ('extends' identifier)? '{' field* method* '}';
@@ -66,4 +66,4 @@ Integer: '0' | [1-9][0-9]*;
 BinaryOperators: '<' | '&&' | '-' | '+' | '*';
 
 WS: [ \n\t\r]+ -> skip; // Ignoring whitespaces and line-breaks.
-COMMENTS: ( ('//' .*? '\n') | ('/*' .*? '*/') ) -> skip; // Ignoring comments.
+COMMENTS: ( ('//' .*? '\n') | ('/*' (COMMENTS | .)*? '*/') ) -> skip; // Ignoring comments.
