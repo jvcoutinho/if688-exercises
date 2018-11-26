@@ -30,29 +30,29 @@ type: 'int' | 'boolean' | 'int' '[' ']' | identifier;
 * Statements.
 *************/
 statement:
-        'System' '.' 'out' '.' 'println' '(' expression ')' ';' #PrintStatement
+        '{' statement* '}' #Block
     |   'if' '(' expression ')' statement 'else' statement #ConditionalStatement
+    |   'while' '(' expression ')' statement #LoopStatement
+    |    'System' '.' 'out' '.' 'println' '(' expression ')' ';' #PrintStatement
     |   identifier '=' expression ';' #AssignmentStatement
-    |   identifier '[' expression '] = ' expression ';' #ArrayAssignmentStatement
-    |   '{' statement* '}' #Block
-    |   'while' '(' expression ')' statement #LoopStatement;
+    |   identifier '[' expression ']' '=' expression ';' #ArrayAssignmentStatement;
 
 /************
 * Expressions.
 *************/
 expression:
         expression BinaryOperators expression #BinaryOperationExpression
-    |   '!' expression #NegationExpression
+    |   expression '[' expression ']' #ArrayLookupExpression
+    |   expression '.' 'length' #ArrayLengthExpression
+    |   expression '.' identifier '(' argument* ')' #CallExpression
     |   'true' #TrueExpression
     |   'false' #FalseExpression
     |   Integer #IntegerExpression
-    |   expression '.' 'length' #ArrayLengthExpression
-    |   expression '[' expression ']' #ArrayLookupExpression
-    |   expression '.' identifier '(' argument* ')' #CallExpression
+    |   identifier #IdentifierExpression
     |   'new' 'int' '[' expression ']' #NewArrayExpression
     |   'new' identifier '(' ')' #NewObjectExpression
     |   'this' #ThisExpression
-    |   identifier #IdentifierExpression
+    |   '!' expression #NegationExpression
     |   '(' expression ')' #ParenthesisExpression;
 
 argument:
