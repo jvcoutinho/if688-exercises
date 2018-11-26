@@ -4,7 +4,8 @@ import br.ufpe.cin.if688.minijava.ast.Program;
 import br.ufpe.cin.if688.minijava.generated.MiniJavaLexer;
 import br.ufpe.cin.if688.minijava.generated.MiniJavaParser;
 import br.ufpe.cin.if688.minijava.parser.ASTVisitor;
-import br.ufpe.cin.if688.minijava.visitor.PrettyPrintVisitor;
+import br.ufpe.cin.if688.minijava.visitor.BuildSymbolTableVisitor;
+import br.ufpe.cin.if688.minijava.visitor.TypeCheckVisitor;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -103,8 +104,13 @@ public class Main {
 
 			MiniJavaParser.ProgramContext program = parser.program();
 			Program p = astVisitor.visitProgram(program);
-			PrettyPrintVisitor ppv = new PrettyPrintVisitor();
-			ppv.visit(p);
+//			PrettyPrintVisitor ppv = new PrettyPrintVisitor();
+//			ppv.visit(p);
+
+			BuildSymbolTableVisitor symbolTableVisitor = new BuildSymbolTableVisitor();
+			p.accept(symbolTableVisitor);
+			p.accept(new TypeCheckVisitor(symbolTableVisitor.getSymbolTable()));
+
 		} catch(IOException e) {
 			System.err.println("Erro ao abrir arquivo!");
 			e.printStackTrace();
