@@ -10,9 +10,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	private SymbolTable symbolTable;
 	private Class currClass;
 	private Method currMethod;
+	private GetValueVisitor valueVisitor;
 
 	public TypeCheckVisitor(SymbolTable st) {
 		symbolTable = st;
+		valueVisitor =  new GetValueVisitor();
 	}
 
 	// MainClass m;
@@ -80,7 +82,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 		Type returnType = n.e.accept(this);
 		if(!symbolTable.compareTypes(returnType, symbolTable.getMethodType(n.i.s, currClass.getId())))
-			error("Erro de tipo! Retorno diferente de declaração!");
+			error("Tipo de retorno (" + returnType.accept(valueVisitor) + ") diferente de declaração (" + symbolTable.getMethodType(n.i.s, currClass.getId()).accept(valueVisitor) + ")");
 		return null;
 	}
 
@@ -119,7 +121,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Statement s1,s2;
 	public Type visit(If n) {
 		if(!(n.e.accept(this) instanceof BooleanType))
-			error("Erro de tipo! Esperava um boolean no If.");
+			error("Expressão do if (" +  n.e.accept(valueVisitor) + ") não é booleana");
 
 		n.s1.accept(this);
 		n.s2.accept(this);
@@ -130,7 +132,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Statement s;
 	public Type visit(While n) {
 		if(!(n.e.accept(this) instanceof BooleanType))
-			error("Erro de tipo! Esperava um boolean no While.");
+			error("Expressão do while (" +  n.e.accept(valueVisitor) + ") não é booleana");
 
 		n.s.accept(this);
 		return null;
@@ -138,8 +140,6 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(Print n) {
-		if(!((n.e.accept(this) instanceof IntegerType) || (n.e.accept(this) instanceof BooleanType)))
-			error("Esperava um int ou boolean no Print.");
 		return null;
 	}
 
@@ -148,7 +148,8 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	public Type visit(Assign n) {
 		Type variableType = symbolTable.getVarType(currMethod, currClass, n.i.s);
 		if(!symbolTable.compareTypes(variableType, n.e.accept(this)))
-			error("Erro de tipo! Atribuição com diferentes tipos em " + n.i.s);
+			error("Atribuição (" + n.accept(valueVisitor) + ") com tipos incompatíveis (" + variableType.accept(valueVisitor) + " = "
+					+ n.e.accept(this).accept(valueVisitor) + ")");
 
 		return null;
 	}
@@ -159,11 +160,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 		// Checking the index.
 		if(!(n.e1.accept(this) instanceof IntegerType))
-			error("Erro de tipo! Index não é um inteiro em " + n.i.s);
+			error("Index inválido do array " + n.i.s);
 
 		// Checking the assignment, considering only ints for MiniJava.
 		if(!(n.e2.accept(this) instanceof IntegerType))
-			error("Erro de tipo! Atribuição com diferentes tipos em " + n.i.s);
+			error("Atribuição (" + n.accept(valueVisitor) + ") com tipos incompatíveis (int = " + n.e2.accept(this).accept(valueVisitor) + ")");
 
 		return null;
 	}
@@ -173,7 +174,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		if(n.e1.accept(this) instanceof BooleanType && n.e2.accept(this) instanceof BooleanType)
 			return new BooleanType();
 
-		error("Erro de tipo! And com diferentes tipos nos operandos.");
+		error("Expressão do and (" + n.accept(valueVisitor) + ") não é booleana");
 		return null;
 	}
 
@@ -182,35 +183,32 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		if(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType)
 			return new BooleanType();
 
-		error("Erro de tipo! LessThan com diferentes tipos nos operandos.");
+		error("O par da relação menor-ou-igual (" + n.accept(valueVisitor) + ") não é (inteiro, inteiro)");
 		return null;
 	}
 
 	// Exp e1,e2;
 	public Type visit(Plus n) {
-		if(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType)
-			return new IntegerType();
+		if(!(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType))
+			error("Função soma (" + n.accept(valueVisitor) + ") com operandos não inteiros");
 
-		error("Erro de tipo! Plus com diferentes tipos nos operandos.");
-		return null;
+		return new IntegerType();
 	}
 
 	// Exp e1,e2;
 	public Type visit(Minus n) {
-		if(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType)
-			return new IntegerType();
+		if(!(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType))
+			error("Função subtração (" + n.accept(valueVisitor) + ") com operandos não inteiros");
 
-		error("Erro de tipo! Minus com diferentes tipos nos operandos.");
-		return null;
+		return new IntegerType();
 	}
 
 	// Exp e1,e2;
 	public Type visit(Times n) {
-		if(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType)
-			return new IntegerType();
+		if(!(n.e1.accept(this) instanceof IntegerType && n.e2.accept(this) instanceof IntegerType))
+			error("Função multiplicação (" + n.accept(valueVisitor) + ") com operandos não inteiros");
 
-		error("Erro de tipo! Times com diferentes tipos nos operandos.");
-		return null;
+		return new IntegerType();
 	}
 
 	// Exp e1,e2;
@@ -218,11 +216,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 		// Checking the array.
 		if(!(n.e1.accept(this) instanceof IntArrayType))
-			error("Erro de tipo! Não é um array.");
+			error("Tentativa de acesso a uma variável não-array (" + n.accept(valueVisitor) + ")");
 
 		// Checking the index.
 		if(!(n.e2.accept(this) instanceof IntegerType))
-			error("Erro de tipo! Index não é um inteiro.");
+			error("Index inválido do array " + n.e1.accept(valueVisitor));
 
 		// Considering only ints.
 		return new IntegerType();
@@ -233,7 +231,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 		// Checking the array.
 		if(!(n.e.accept(this) instanceof IntArrayType))
-			error("Erro de tipo! Não é um array.");
+			error("Tentativa de acesso a uma variável não-array (" + n.accept(valueVisitor) + ")");
 
 		return new IntegerType();
 	}
@@ -254,10 +252,10 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 		// Checking if the argument list matches the declaration.
 		if(method.getParams().hasMoreElements() && n.el.size() == 0)
-			error("Chamada não bate com declaração.");
+			error("Chamada do método (" + n.accept(valueVisitor) + ") não corresponde à sua declaração,");
 		for (int i = 0; i < n.el.size(); i++) {
 			if(!symbolTable.compareTypes(method.getParamAt(i).type(), n.el.elementAt(i).accept(this)))
-				error("Chamada não bate com declaração.");
+				error("Chamada do método (" + n.accept(valueVisitor) + ") não corresponde à sua declaração,");
 		}
 
 		return method.type();
@@ -290,7 +288,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 		// Checking the index.
 		if(!(n.e.accept(this) instanceof IntegerType))
-			error("Erro de tipo! Index não é um inteiro.");
+			error("Criação de objeto array inválida (" + n.accept(valueVisitor) + ")");
 
 		return new IntArrayType();
 	}
@@ -300,8 +298,8 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		if(symbolTable.containsClass(n.i.s))
 			return symbolTable.getClass(n.i.s).type();
 		else
-			error("Tipo inexistente em new.");
-		return null;
+			error("Criação de objeto de tipo inexistente (" + n.accept(valueVisitor) + ")");
+		return new IdentifierType(n.i.s);
 	}
 
 	// Exp e;
@@ -309,7 +307,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		if(n.e.accept(this) instanceof BooleanType)
 			return new BooleanType();
 
-		error("Erro de tipo! Not com um não booleano como operando.");
+		error("Expressão do not (" + n.accept(valueVisitor) + ") não é booleana");
 		return null;
 	}
 
@@ -319,7 +317,6 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	}
 
 	private void error(String message) {
-		System.err.println(message);
-		System.exit(1);
+		System.err.println(message + " no método " + currMethod.getId() + " da classe " + currClass.getId() + ".");
 	}
 }

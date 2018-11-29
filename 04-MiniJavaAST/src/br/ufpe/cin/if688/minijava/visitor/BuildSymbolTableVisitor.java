@@ -48,13 +48,13 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	public Void visit(ClassDeclSimple n) {
 		if(symbolTable.addClass(n.i.s, null))
 			currClass = symbolTable.getClass(n.i.s);
-		else {
-			System.err.println("Classe já existente!");
-			System.exit(1);
-		}
+		else
+			System.err.println("Erro de ambiguidade de tipo: classe " + n.i.s + " já existente!");
 
 		for (int i = 0; i < n.vl.size(); i++) {
 			VarDecl variable = n.vl.elementAt(i);
+			if(currClass.containsVar(variable.i.s))
+                System.err.println("Erro de ambiguidade de tipo: variável " + variable.i.s + " já existente!");
 			currClass.addVar(variable.i.s, variable.t);
 		}
 
@@ -73,13 +73,13 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	public Void visit(ClassDeclExtends n) {
 		if(symbolTable.addClass(n.i.s, n.j.s))
 			currClass = symbolTable.getClass(n.i.s);
-		else {
-			System.err.println("Classe já existente!");
-			System.exit(1);
-		}
+		else
+			System.err.println("Erro de ambiguidade de tipo: classe " + n.i.s + " já existente!");
 
 		for (int i = 0; i < n.vl.size(); i++) {
 			VarDecl variable = n.vl.elementAt(i);
+            if(currClass.containsVar(variable.i.s))
+                System.err.println("Erro de ambiguidade de tipo: variável " + variable.i.s + " já existente!");
 			currClass.addVar(variable.i.s, variable.t);
 		}
 
